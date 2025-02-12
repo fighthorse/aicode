@@ -1,4 +1,8 @@
 
+## golang 桌面AI Desk 使用 fyne 构建
+![基础项目图](img.png "模版")
+
+
 ## ollama安装方法
 安装ollama：
 `
