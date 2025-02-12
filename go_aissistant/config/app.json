@@ -1,0 +1,9 @@
+{
+  "ollama_url": "http://127.0.0.1:11434",
+  "google_api_key": "",
+  "chroma_path": "",
+  "sqlite_path": "./ai.db",
+  "default_model": "deepseek-r1:1.5b",
+  "history_limit": 1000,
+  "retention_days": 10000
+}
