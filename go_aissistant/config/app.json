@@ -1,5 +1,9 @@
 {
+  "collection_name": "test",
   "ollama_url": "http://127.0.0.1:11434",
+  "UseMilvus": "",
+  "MilvusURL": "localhost:19530",
+  "KnowledgeBaseCollection": "personal_kb",
   "google_api_key": "",
   "chroma_path": "",
   "sqlite_path": "./ai.db",

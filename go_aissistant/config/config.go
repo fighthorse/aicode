@@ -13,8 +13,10 @@ type AppConfig struct {
 	GoogleAPIKey       string `json:"google_api_key"`
 	GoogleCX           string `json:"google_cx"`
 	BingAPIKey         string `json:"bing_api_key"`
+	UseMilvus          string `json:"use_milvus"` // 1 表示使用Milvus
 	ChromaPath         string `json:"chroma_path"`
 	ChromaURL          string `json:"chroma_url"`
+	MilvusURL          string `json:"milvus_url"`
 	SQLitePath         string `json:"sqlite_path"` // 新增SQLite路径
 	DefaultModel       string `json:"default_model"`
 	HistoryLimit       int    `json:"history_limit"` // 历史记录条数限制

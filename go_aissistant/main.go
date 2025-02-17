@@ -45,9 +45,20 @@ func runGUI(cc *config.AppConfig) {
 			fmt.Println("发生错误:", r)
 		}
 	}()
+
+	// chromadb 初始化
+	fmt.Println("初始化知识库")
+	// 初始化知识库
+	kknowledgeBase, err := knowledgebase.NewKnowledgeBaseManager(cc)
+	if err != nil {
+		fmt.Println("发生错误:", err)
+		return
+	}
+
 	// 创建GUI
+	fmt.Println("创建GUI")
 	fyneApp := app.New()
-	mainWin := gui.NewMainWindow(fyneApp, cc)
+	mainWin := gui.NewMainWindow(fyneApp, cc, kknowledgeBase)
 
 	// 运行应用
 	mainWin.Show()
@@ -72,7 +83,7 @@ func runCLI(cc *config.AppConfig) {
 			"date":   time.Now().Format("2006-01-02"),
 		},
 	}
-	kb, _ := knowledgebase.NewKnowledgeBase(cc)
+	kb, _ := knowledgebase.NewChromaKB(cc)
 	kb.AddDocuments([]knowledgebase.Document{doc})
 
 	// 处理用户查询

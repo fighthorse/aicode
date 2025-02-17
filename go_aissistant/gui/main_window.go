@@ -26,7 +26,7 @@ type MainWindow struct {
 
 	// 核心组件
 	aiClient      *ai_model.OllamaClient
-	knowledgeBase *knowledgebase.KnowledgeBase
+	knowledgeBase knowledgebase.KnowledgeBaseI
 	storage       *storage.SQLiteStorage
 	searchClient  websearch.WebSearchI
 
@@ -39,15 +39,16 @@ type MainWindow struct {
 	progressBar *widget.ProgressBarInfinite
 }
 
-func NewMainWindow(app fyne.App, config *config.AppConfig) *MainWindow {
+func NewMainWindow(app fyne.App, config *config.AppConfig, kknowledgeBase knowledgebase.KnowledgeBaseI) *MainWindow {
 	mw := &MainWindow{
-		app:         app,
-		config:      config,
-		window:      app.NewWindow("GoAIssistant"),
-		inputEntry:  widget.NewEntry(),
-		outputText:  widget.NewLabel(""),
-		statusLabel: widget.NewLabel("就绪"),
-		progressBar: widget.NewProgressBarInfinite(),
+		app:           app,
+		config:        config,
+		window:        app.NewWindow("GoAIssistant"),
+		inputEntry:    widget.NewEntry(),
+		outputText:    widget.NewLabel(""),
+		statusLabel:   widget.NewLabel("就绪"),
+		progressBar:   widget.NewProgressBarInfinite(),
+		knowledgeBase: kknowledgeBase,
 	}
 
 	mw.outputText.TextStyle = fyne.TextStyle{
@@ -71,12 +72,6 @@ func (mw *MainWindow) initializeComponents() {
 
 	// 初始化AI客户端
 	mw.aiClient = ai_model.NewOllamaClient(mw.config.OllamaURL)
-
-	// 初始化知识库
-	mw.knowledgeBase, err = knowledgebase.NewKnowledgeBase(mw.config)
-	if err := mw.knowledgeBase.Initialize("personal_kb"); err != nil {
-		dialog.ShowError(err, mw.window)
-	}
 
 	// 初始化存储
 	mw.storage, err = storage.NewSQLiteStorage(mw.config.SQLitePath)
@@ -134,6 +129,7 @@ func (mw *MainWindow) buildUI() {
 	// 使用 widget.NewLabelWrap 创建自动换行的标签
 	// 修改输出区域的创建方式
 	mw.outputText = widget.NewLabel("")
+	// 修改后
 	mw.outputText.Wrapping = fyne.TextWrapWord // 启用自动换行
 
 	rightPanel := container.NewBorder(
@@ -218,12 +214,14 @@ func (mw *MainWindow) processQuery(question string, model string) (string, error
 	for _, doc := range kbResults {
 		kbStr = append(kbStr, doc.Text)
 	}
+	fmt.Println("knowledgeBase Query")
 	// 步骤2：执行网络搜索
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	webResults, _ := mw.searchClient.Search(ctx, question, 5)
 
+	fmt.Println("searchClient Search")
 	// 步骤3：构建提示
 	prompt := question
 	if len(kbStr) > 0 && len(webResults) > 0 {
@@ -234,6 +232,7 @@ func (mw *MainWindow) processQuery(question string, model string) (string, error
 	if model == "" {
 		model = mw.config.DefaultModel
 	}
+	fmt.Println("aiClient Generate", prompt, " ", model)
 	response, err := mw.aiClient.Generate(prompt, model)
 	if err != nil {
 		return err.Error(), nil
@@ -278,9 +277,6 @@ func (mw *MainWindow) refreshHistory() {
 }
 
 func (mw *MainWindow) loadInitialData() {
-	if err := mw.knowledgeBase.Initialize("personal_kb"); err != nil {
-		dialog.ShowError(err, mw.window)
-	}
 	if err := mw.storage.CleanOldRecords(mw.config.RetentionDays); err != nil {
 		dialog.ShowError(err, mw.window)
 	}
